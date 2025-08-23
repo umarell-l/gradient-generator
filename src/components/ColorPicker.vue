@@ -27,12 +27,10 @@ export default {
 <template>
   <div class="color-picker">
     <ColorBind
+      :currentColor
       @changeColor="newGrident => $emit('changeBg', newGrident)"
-      @IDChanged="newColor => currentColor = newColor"
-      :currentColor/>
-    <Sketch
-      v-model="currentColor"
-    />
+      @IDChanged="newColor => currentColor = newColor" />
+    <Sketch v-model="currentColor" />
   </div>
 </template>
 
@@ -41,7 +39,6 @@ export default {
 :root {
   --picker-width: 1200px;
   --picker-height: 800px;
-  --bind-height: 50px;
   .color-picker {
     width: var(--picker-width);
     height: var(--picker-height);
@@ -53,6 +50,7 @@ export default {
       padding: 0;
       width: 1134px;
       height: 300px;
+      margin-top: 20px;
       display: flex;
       flex-direction: column;
       flex-wrap: wrap;
