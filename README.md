@@ -4,24 +4,9 @@
 
 ## 核心功能
 
-|​实时预览​​|基于MutationObserver监听DOM变化，动态更新background属性
-|多渐变类型​​|支持线性渐变（8方向+角度输入）、径向渐变（圆形/椭圆）
-|​​智能随机生成|预设模板+色轮算法（getRandomColor()），按概率混合生成美学渐变
-|​​一键复制代码​|document.execCommand('copy')+ 成功状态反馈
-|​响应式布局​​|CSS Grid + Flexbox + 媒体查询（适配移动端操作面板）
-
-
-## 目录结构描述
-├── public
-│   └── favicon.ico
-├── src
-│   ├── components
-│   │   ├── ColorPicker.vue
-│   │   └── PreviewBox.vue
-│   ├── APP.vue
-│   └── index.js
-├── index.html
-├── jsconfig.json
-├── package.json
-├── README.md
-└── vite.config.js
+|---------------|------------------------------------------------------------|
+|    ​实时预览    | 基于MutationObserver监听DOM变化，动态更新background属性      |
+|   多渐变类型   | 支持线性渐变（8方x向+角度输入）、径向渐变（圆形/椭圆）         | 
+|  ​智能随机生成  | 预设模板+色轮算法（getRandomColor()），按概率混合生成美学渐变  |  
+|  ​一键复制代码  | document.execCommand('copy')+ 成功状态反馈                  |
+|   ​响应式布局   | CSS Grid + Flexbox + 媒体查询（适配移动端操作面板）          |
