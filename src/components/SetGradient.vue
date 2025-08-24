@@ -1,6 +1,6 @@
 <script>
 export default {
-  emits: ['changeType', 'changeDegree', 'editDegree'],
+  emits: ['changeType', 'changeDegree', 'editDegree', 'changeShape'],
   props: {
     type: String,
     param: String,
@@ -39,6 +39,9 @@ export default {
           <div class="point" :style="{'transform': `rotate(${parseInt(param)}deg)`}"></div>
         </div>
         <div class="degree-label"><input type="text" :value="parseInt(param)" @focus="editDegree">°</div>
+      </div>
+      <div class="gradient-shape" v-show="type === 'radial'">
+        <div class="set-shape" @click="$emit('changeShape')" :style="{'width': `${(param === 'ellipse') ? 60 : 40}px`}"></div>
       </div>
     </div>
   </div>
@@ -82,7 +85,7 @@ export default {
         font-weight: 700;
         cursor: pointer;
       }
-      .gradient-degree {
+      .gradient-degree, .gradient-shape {
         width: 100%;
         display: flex;
         justify-content: space-evenly;
@@ -123,6 +126,12 @@ export default {
               border-radius: 5px;
             }
           }
+        }
+        .set-shape {
+          height: 40px;
+          border: 4px solid #333;
+          border-radius: 50%;
+          cursor: pointer;
         }
       }
     }

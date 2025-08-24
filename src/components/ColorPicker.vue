@@ -28,7 +28,7 @@ export default {
     changeType() {
       if (this.type === 'linear') {
         this.type = 'radial'
-        this.param = 'circle'
+        this.param = 'ellipse'
       } else if (this.type === 'radial') {
         this.type = 'linear'
         this.param = '90deg'
@@ -86,7 +86,8 @@ export default {
       :param
       @changeType="changeType"
       @changeDegree="changeDegree"
-      @editDegree="newDegree => this.param = newDegree + 'deg'" />
+      @editDegree="newDegree => this.param = newDegree + 'deg'"
+      @changeShape="this.param = (this.param === 'ellipse') ? 'circle' : 'ellipse'" />
     <ColorBind
       ref="colorBind"
       :currentColor
