@@ -3,85 +3,84 @@
 import html2canvas from 'html2canvas'
 export default {
   props: {
-    currentColor: Object
+    currentColor: Object,
+    type: String,
+    param: String,
   },
+  emits: ['changeColor', 'IDChanged'],
   data() {
     return {
       activeID: 1,
-      gradient: {
-        colors: [
-          {color: {
-              hex: "#D7E821",
-              hex8: '#D7E821FF',
-              hsl: { h: 65, s: 0.81, l: 0.52, a: 1 },
-              hsv: { h: 65, s: 0.84, v: 0.91, a: 1 },
-              rgba: { r: 215, g: 232, b: 33, a: 1 },
-              a: 1
-            }, location: 0, id: 0},
-          {color: {
-            hex: "#47D18C",
-            hex8: "#47D18CFF",
-            hsl: { h: 150, s: 0.6, l: 0.55, a: 1 },
-            hsv: { h: 150, s: 0.66, v: 0.82, a: 1 },
-            rgba: { r: 71, g: 209, b: 140, a: 1 },
+      gradientColors: [
+        {color: {
+            hex: "#D7E821",
+            hex8: '#D7E821FF',
+            hsl: { h: 65, s: 0.81, l: 0.52, a: 1 },
+            hsv: { h: 65, s: 0.84, v: 0.91, a: 1 },
+            rgba: { r: 215, g: 232, b: 33, a: 1 },
             a: 1
-          }, location: 100, id: 1}
-        ],
-        type: 'linear',
-        direction: 90,
-      }
+          }, location: 0, id: 0},
+        {color: {
+          hex: "#47D18C",
+          hex8: "#47D18CFF",
+          hsl: { h: 150, s: 0.6, l: 0.55, a: 1 },
+          hsv: { h: 150, s: 0.66, v: 0.82, a: 1 },
+          rgba: { r: 71, g: 209, b: 140, a: 1 },
+          a: 1
+        }, location: 100, id: 1}
+      ]
     }
   },
   computed: {
     sortedColors() {
-      return this.gradient.colors.sort((c1, c2) => {
+      // 按照百分比将颜色排序
+      return this.gradientColors.sort((c1, c2) => {
         return c1.location - c2.location
       })
     },
     gradientColor() {
-      if (this.gradient.type === 'linear') {
-        const colorList = this.sortedColors.map(item => {
-          return `${item.color.hex} ${item.location}%`
-        }).join(', ')
-        return `linear-gradient(${this.gradient.direction}deg, ${colorList})`
-      }
+      // bind背景色
+      const colorList = this.sortedColors.map(item => {
+        return `${item.color.hex} ${item.location}%`
+      }).join(', ')
+      return `linear-gradient(90deg, ${colorList})`
     },
     gradientColorWithAlpha() {
-      if (this.gradient.type === 'linear') {
-        const colorList = this.sortedColors.map(item => {
-          return `${item.color.hex8} ${item.location}%`
-        }).join(', ')
-        return `linear-gradient(${this.gradient.direction}deg, ${colorList})`
-      }
+      // preview-box背景色
+      const colorList = this.sortedColors.map(item => {
+        return `${item.color.hex8} ${item.location}%`
+      }).join(', ')
+      return `${this.type}-gradient(${this.param}, ${colorList})`
     }
   },
   methods: {
     movePointer(e1) {
       // 获取类名列表
       const classList = Array.from(e1.target.classList)
-      let pointer = null
-      // 通过类名列表确定当前按下的pointer
-      if (classList.indexOf('bind-pointer') !== -1) {
-        pointer = e1.target
-      } else if (classList.indexOf('inner-box') !== -1) {
-        pointer = e1.target.parentElement
+      let point = null
+      // 通过类名列表确定当前按下的point
+      if (classList.indexOf('bind-point') !== -1) {
+        point = e1.target
+      } else if (classList.indexOf('point-visual') !== -1) {
+        point = e1.target.parentElement
       }
-      // 如果pointer被按下，触发activeID更新，并绑定拖动事件
-      if (pointer) {
+      // 如果point被按下，触发activeID更新，并绑定拖动事件
+      if (point) {
         // activeID更新
-        this.activeID = Number(pointer.dataset.id)
-        const bind = this.$refs.colorBind
+        this.activeID = Number(point.dataset.id)
+        const bind = this.$refs['color-bind']
         const initialX = bind.offsetLeft
         // 拖动事件
         const onMouseMove = (e2) => {
-          // 计算新的pointer位置
+          // 计算新的point位置
           const newX = Math.max(0, Math.min(e2.clientX - initialX - 10, 1120))
           // 计算新的位置在bind中的百分比
+          console.log()
           const percent = newX * 100 / 1120
-          // 更新pointer位置
-          pointer.style.left = `${newX}px`
+          // 更新point位置
+          point.style.left = `${newX}px`
           // 更新gradient对象中对应颜色的location
-          this.gradient.colors.forEach(colorItem => {
+          this.gradientColors.forEach(colorItem => {
             if (colorItem.id === this.activeID) {
               colorItem.location = percent
             }
@@ -90,25 +89,22 @@ export default {
         // 鼠标抬起事件
         const onMouseUp = () => {
           // 移除事件绑定
-          document.ondragstart = null
-          document.onselectstart = null
           document.removeEventListener('mousemove', onMouseMove)
           document.removeEventListener('mouseup', onMouseUp)
         }
         // 绑定鼠标移动和抬起事件
-        document.ondragstart = () => false
-        document.onselectstart = () => false
+        
         document.addEventListener('mousemove', onMouseMove)
         document.addEventListener('mouseup', onMouseUp)
       }
     },
     async addColor(e) {
-      const canvas = await html2canvas(this.$refs.colorBind, {
+      const canvas = await html2canvas(this.$refs['color-bind'], {
         useCORS: true,
         scale: window.devicePixelRatio,
       })
 
-      const rect = this.$refs.colorBind.getBoundingClientRect()
+      const rect = this.$refs['color-bind'].getBoundingClientRect()
       const x = e.clientX - rect.left
       const y = e.clientY - rect.top
 
@@ -118,18 +114,43 @@ export default {
       const id = Date.now()
       const hex = `#${r.toString(16)}${g.toString(16)}${b.toString(16)}`
       const hex8 = hex + a.toString(16)
-      this.gradient.colors.push({color: {
+      this.gradientColors.push({color: {
         hex,
         hex8,
         rgba: {r, g, b, a}
       }, location: (x - 10) * 100 / 1120, id})
       this.activeID = id
+    },
+    focusLabel(e, id) {
+      this.activeID = id
+      const input = e.target
+      const changeLocation = () => {
+        for (const colorItem of this.gradientColors) {
+          if (colorItem.id === this.activeID) {
+            const newLocation = Math.max(0, Math.min(100, parseInt(input.value)))
+            if (isNaN(newLocation)) {
+              input.value = colorItem.location
+            }else {
+              colorItem.location = newLocation
+            }
+            break
+          }
+        }
+      }
+      input.addEventListener('keydown', (e1) => {
+        if (e1.key === 'Enter') {
+          changeLocation()
+          input.removeEventListener('blur', changeLocation)
+          input.blur()
+        }
+      })
+      input.addEventListener('blur', changeLocation)
     }
   },
   watch: {
     currentColor: {
       handler() {
-        this.gradient.colors.forEach(colorItem => {
+        this.gradientColors.forEach(colorItem => {
           if (colorItem.id === this.activeID) {
             colorItem['color'] = this.currentColor
           }
@@ -139,7 +160,7 @@ export default {
       immediate: true,
     },
     activeID() {
-      for (const colorItem of this.gradient.colors) {
+      for (const colorItem of this.gradientColors) {
         if (colorItem.id === this.activeID) {
           this.$emit('IDChanged', colorItem.color)
           break
@@ -156,15 +177,19 @@ export default {
   mounted() {
     document.addEventListener('keyup', (e) => {
       if (e.key === 'Delete' || e.key === 'Backspace') {
-        if (this.gradient.colors.length > 2) {
-          const deleteIndex = this.gradient.colors.findIndex(colorItem => {
-            return colorItem.id === this.activeID
-          })
-          this.gradient.colors.splice(deleteIndex, 1)
-          this.activeID = this.gradient.colors[Math.floor(this.gradient.colors.length / 2)].id
+        if (document.activeElement.tagName !== 'INPUT') {
+          if (this.gradientColors.length > 2) {
+            const deleteIndex = this.gradientColors.findIndex(colorItem => {
+              return colorItem.id === this.activeID
+            })
+            this.gradientColors.splice(deleteIndex, 1)
+            this.activeID = this.gradientColors[Math.floor(this.gradientColors.length / 2)].id
+          }
         }
       }
     })
+    document.ondragstart = () => false
+    document.onselectstart = () => false
   }
 }
 </script>
@@ -174,17 +199,17 @@ export default {
   
   <div
     class="color-bind"
-    
-    @mousedown="movePointer"
-    ref="colorBind">
-    <div class="background" :style="{'background-image': gradientColor}" ref="bindBg" @click="addColor"></div>
-    <div class="bind-pointer"
-      v-for="item of gradient.colors"
+    ref="color-bind"
+    @mousedown="movePointer">
+    <div class="bind-background" :style="{'background-image': gradientColor}" @click="addColor"></div>
+    <div class="bind-point"
+      v-for="item of gradientColors"
       :key="item.id"
       :data-id="item.id"
       :style="{'left': `${item.location * 0.01 * 1120}px`, 'background-color': `${item.color.hex}`}"
       :class="{'active': item.id === activeID}">
-      <div class="inner-box"></div>
+      <div class="point-visual"></div>
+      <input class="point-label" :value="parseInt(item.location)" @focus="focusLabel($event, item.id)">
     </div>
   </div>
 </template>
@@ -192,47 +217,78 @@ export default {
 
 <style lang="less">
 :root {
+  --bind-bg-left: 5px;
+  --bind-bg-bottom: 30px;
   --bind-height: 24px;
-  --bind-width: 1130px;
+  --bind-width: calc(100% - 2 * var(--bind-bg-left));
+  --bind-bg-border: 1px solid #ddd;
   --bind-radius: 12px;
-  --bind-pointer-top: -4px;
-  --bind-pointer-width: 20px;
-  --bind-pointer-height: 32px;
-  --bind-pointer-border: 3px;
-  --bind-pointer-radius: 10px;
-  --bind-inner-width: 14px;
-  --bind-inner-height: 26px;
-  --bind-inner-radius: 7px;
+
+  --bind-point-top: -4px;
+  --bind-point-width: 20px;
+  --bind-point-height: 32px;
+  --bind-point-border: 3px solid #414141;
+  --bind-point-radius: 10px;
+  --bind-visual-width: 14px;
+  --bind-visual-height: 26px;
+  --bind-visual-radius: 7px;
+  --bind-label-left: -12px;
+  --bind-label-top: 41px;
+  --bind-label-width: 40px;
+  --bind-labal-height: 30px;
+  --bind-label-border: 1px solid #ccc;
+  --bind-label-radius: 5px;
+  --bind-label-font-size: 16px;
+  --bind-label-active-top: 34px;
+  --bind-label-active-border: 2px solid #777;
   .color-bind {
     border-bottom: 1px solid #eee;
     position: relative;
-    .background {
+    .bind-background {
       width: var(--bind-width);
       height: var(--bind-height);
-      margin-left: 5px;
-      margin-bottom: 50px;
+      margin-left: var(--bind-bg-left);
+      margin-bottom: var(--bind-bg-bottom);
+      border: var(--bind-bg-border);
       border-radius: var(--bind-radius);
       cursor: copy;
     }
-    .bind-pointer {
+    .bind-point {
       position: absolute;
-      top: var(--bind-pointer-top);
-      width: var(--bind-pointer-width);
-      height: var(--bind-pointer-height);
-      border: var(--bind-pointer-border) solid #414141;
-      border-radius: var(--bind-pointer-radius);
+      top: var(--bind-point-top);
+      width: var(--bind-point-width);
+      height: var(--bind-point-height);
+      border: var(--bind-point-border);
+      border-radius: var(--bind-point-radius);
       cursor: pointer;
-      .inner-box {
-        width: var(--bind-inner-width);
-        height: var(--bind-inner-height);
-        border: 2px solid #ffffff;
-        border-radius: var(--bind-inner-radius);
-        z-index: -1
+      .point-visual {
+        width: var(--bind-visual-width);
+        height: var(--bind-visual-height);
+        border: 2px solid #fff;
+        border-radius: var(--bind-visual-radius);
+        z-index: -1;
+      }
+      .point-label {
+        position: absolute;
+        left: var(--bind-label-left);
+        top: var(--bind-label-top);
+        width: var(--bind-label-width);
+        height: var(--bind-labal-height);
+        border: var(--bind-label-border);
+        outline: none;
+        border-radius: var(--bind-label-radius);
+        text-align: center;
+        font-size: var(--bind-label-font-size);
       }
     }
     .active {
       transform: scale(1.2);
-      box-shadow: 0 0 10px 2px #eee;
+      box-shadow: 0 0 3px 4px #fff;
+      z-index: 1;
+      .point-label {
+        top: var(--bind-label-active-top);
+        border: var(--bind-label-active-border);
+      }
     }
   }
 }
