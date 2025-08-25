@@ -49,7 +49,7 @@ export default {
       const colorList = this.sortedColors.map(item => {
         return `${item.color.hex8} ${item.location}%`
       }).join(', ')
-      return `${this.type[0]}-gradient(${this.type[1]}, ${colorList})`
+      return `${this.type[0]}-gradient(${this.type[0] === 'conic' ? 'from ' : ''}${this.type[1]}, ${colorList})`
     }
   },
   methods: {
@@ -90,11 +90,9 @@ export default {
           // 移除事件绑定
           document.removeEventListener('mousemove', onMouseMove)
           document.removeEventListener('mouseup', onMouseUp)
-          document.ondragstart = null
           document.onselectstart = null
         }
-        // 禁用文档拖拽和选择事件
-        document.ondragstart = () => false
+        // 禁用文档选择事件
         document.onselectstart = () => false
         // 绑定鼠标移动和抬起事件
         document.addEventListener('mousemove', onMouseMove)
@@ -191,6 +189,7 @@ export default {
         }
       }
     })
+    document.ondragstart = () => false
   }
 }
 </script>

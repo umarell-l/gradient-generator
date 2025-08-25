@@ -33,7 +33,7 @@ export default {
   <div class="set-gradient">
     <div class="setting">
       <button class="gradient-type" @click.prevent="$emit('changeType')">{{ type[0] }}</button>
-      <div class="gradient-degree" v-show="type[0] === 'linear'">
+      <div class="gradient-degree" v-show="type[0] !== 'radial'">
         <div class="set-degree" @mousedown="$emit('changeDegree', $event)">
           <div class="point" :style="{'transform': `rotate(${parseInt(type[1])}deg)`}"></div>
         </div>

@@ -15,7 +15,8 @@ export default {
       typeIndex: 0,
       types: [
         ['linear', '90deg'],
-        ['radial', 'ellipse']
+        ['radial', 'ellipse'],
+        ['conic', '0deg']
       ],
       currentColor: {
         hex: "#47D18C",
@@ -68,11 +69,9 @@ export default {
         const onMouseUp = () => {
           document.removeEventListener('mousemove', onMouseMove)
           document.removeEventListener('mouseup', onMouseUp)
-        document.ondragstart = () => null
-        document.onselectstart = () => null
+          document.onselectstart = () => null
         }
 
-        document.ondragstart = () => false
         document.onselectstart = () => false
         document.addEventListener('mousemove', onMouseMove)
         document.addEventListener('mouseup', onMouseUp)
