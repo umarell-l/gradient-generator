@@ -12,31 +12,31 @@ export default {
   emits: ['changeBg'],
   data() {
     return {
-      type: 'linear',
-      param: '90deg',
+      typeIndex: 0,
+      types: [
+        ['linear', '90deg'],
+        ['radial', 'ellipse']
+      ],
       currentColor: {
         hex: "#47D18C",
         hex8: "#47D18CFF",
         hsl: { h: 150, s: 0.6, l: 0.55, a: 1 },
         hsv: { h: 150, s: 0.66, v: 0.82, a: 1 },
         rgba: { r: 71, g: 209, b: 140, a: 1 },
-        a: 1
+        a: 0.5
       }
     }
   },
   methods: {
     changeType() {
-      if (this.type === 'linear') {
-        this.type = 'radial'
-        this.param = 'ellipse'
-      } else if (this.type === 'radial') {
-        this.type = 'linear'
-        this.param = '90deg'
+      if (this.typeIndex === this.types.length - 1) {
+        this.typeIndex = 0
+      } else {
+        this.typeIndex++
       }
     },
     changeDegree(e) {
       let point = null
-      
       if (e.target.className === 'point') {
         point = e.target
       }else if (e.target.className === 'set-degree') {
@@ -61,15 +61,19 @@ export default {
             rot = -atan
           }
           // 渐变方向变化
-          this.param = `${rot}deg`
+          this.types[this.typeIndex][1] = `${rot}deg`
           // point旋转
           point.style.transform = `rotate(${rot}deg)`
         }
         const onMouseUp = () => {
           document.removeEventListener('mousemove', onMouseMove)
           document.removeEventListener('mouseup', onMouseUp)
+        document.ondragstart = () => null
+        document.onselectstart = () => null
         }
 
+        document.ondragstart = () => false
+        document.onselectstart = () => false
         document.addEventListener('mousemove', onMouseMove)
         document.addEventListener('mouseup', onMouseUp)
       }
@@ -82,17 +86,15 @@ export default {
 <template>
   <div class="color-picker">
     <SetGradient
-      :type
-      :param
+      :type="types[typeIndex]"
       @changeType="changeType"
       @changeDegree="changeDegree"
-      @editDegree="newDegree => this.param = newDegree + 'deg'"
-      @changeShape="this.param = (this.param === 'ellipse') ? 'circle' : 'ellipse'" />
+      @editDegree="newDegree => types[typeIndex][1] = parseInt(newDegree) + 'deg'"
+      @changeShape="types[typeIndex][1] = (types[typeIndex][1] === 'ellipse') ? 'circle' : 'ellipse'" />
     <ColorBind
       ref="colorBind"
       :currentColor
-      :type
-      :param
+      :type="types[typeIndex]"
       @changeColor="newGrident => $emit('changeBg', newGrident)"
       @IDChanged="newColor => currentColor = newColor" />
     <Sketch v-model="currentColor" />

@@ -2,8 +2,7 @@
 export default {
   emits: ['changeType', 'changeDegree', 'editDegree', 'changeShape'],
   props: {
-    type: String,
-    param: String,
+    type: Array,
   },
   methods: {
     editDegree(e) {
@@ -11,7 +10,7 @@ export default {
       const onChange = () => {
         const newDegree = Math.max(0, Math.min(359, parseInt(input.value)))
         if (isNaN(newDegree)) {
-          input.value = parseInt(this.param)
+          input.value = parseInt(this.type[1])
         }
         else {
           this.$emit('editDegree', newDegree)
@@ -33,15 +32,15 @@ export default {
 <template>
   <div class="set-gradient">
     <div class="setting">
-      <div class="gradient-type" @click="$emit('changeType')">{{ type }}</div>
-      <div class="gradient-degree" v-show="type === 'linear'">
+      <button class="gradient-type" @click.prevent="$emit('changeType')">{{ type[0] }}</button>
+      <div class="gradient-degree" v-show="type[0] === 'linear'">
         <div class="set-degree" @mousedown="$emit('changeDegree', $event)">
-          <div class="point" :style="{'transform': `rotate(${parseInt(param)}deg)`}"></div>
+          <div class="point" :style="{'transform': `rotate(${parseInt(type[1])}deg)`}"></div>
         </div>
-        <div class="degree-label"><input type="text" :value="parseInt(param)" @focus="editDegree">°</div>
+        <div class="degree-label"><input type="text" :value="parseInt(type[1])" @focus="editDegree">°</div>
       </div>
-      <div class="gradient-shape" v-show="type === 'radial'">
-        <div class="set-shape" @click="$emit('changeShape')" :style="{'width': `${(param === 'ellipse') ? 60 : 40}px`}"></div>
+      <div class="gradient-shape" v-show="type[0] === 'radial'">
+        <div class="set-shape" @click="$emit('changeShape')" :style="{'width': `${(type[1] === 'ellipse') ? 60 : 40}px`}"></div>
       </div>
     </div>
   </div>
@@ -60,7 +59,6 @@ export default {
   .set-gradient {
     width: var(--set-gradient-width);
     height: var(--set-gradient-height);
-    // background-color: pink;
     margin-bottom: var(--set-gradient-bottom);
     display: flex;
     justify-content: start;
@@ -71,16 +69,18 @@ export default {
       flex-direction: column;
       align-items: center;
       justify-content: start;
+      padding-right: 30px;
+      border-right: 1px solid #eee;
       .gradient-type {
         width: var(--set-type-width);
         height: var(--set-type-height);
         margin-bottom: 20px;
         background-color: #eee;
-        border: var(--set-type-border) solid #ddd;
+        border: var(--set-type-border) solid #ccc;
         border-radius: var(--set-type-radius);
         line-height: calc(var(--set-type-height) - 6px);
         text-align: center;
-        color: #777;
+        color: #555;
         font-size: 20px;
         font-weight: 700;
         cursor: pointer;

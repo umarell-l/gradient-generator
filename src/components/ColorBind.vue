@@ -4,8 +4,7 @@ import html2canvas from 'html2canvas'
 export default {
   props: {
     currentColor: Object,
-    type: String,
-    param: String,
+    type: Array,
   },
   emits: ['changeColor', 'IDChanged'],
   data() {
@@ -50,7 +49,7 @@ export default {
       const colorList = this.sortedColors.map(item => {
         return `${item.color.hex8} ${item.location}%`
       }).join(', ')
-      return `${this.type}-gradient(${this.param}, ${colorList})`
+      return `${this.type[0]}-gradient(${this.type[1]}, ${colorList})`
     }
   },
   methods: {
@@ -91,9 +90,13 @@ export default {
           // 移除事件绑定
           document.removeEventListener('mousemove', onMouseMove)
           document.removeEventListener('mouseup', onMouseUp)
+          document.ondragstart = null
+          document.onselectstart = null
         }
+        // 禁用文档拖拽和选择事件
+        document.ondragstart = () => false
+        document.onselectstart = () => false
         // 绑定鼠标移动和抬起事件
-        
         document.addEventListener('mousemove', onMouseMove)
         document.addEventListener('mouseup', onMouseUp)
       }
@@ -188,8 +191,6 @@ export default {
         }
       }
     })
-    document.ondragstart = () => false
-    document.onselectstart = () => false
   }
 }
 </script>
