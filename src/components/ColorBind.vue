@@ -3,54 +3,20 @@
 import html2canvas from 'html2canvas'
 export default {
   props: {
+    activeID: Number,
     currentColor: Object,
+    gradientColors: Array,
     type: Array,
   },
-  emits: ['changeColor', 'IDChanged'],
-  data() {
-    return {
-      activeID: 1,
-      gradientColors: [
-        {color: {
-            hex: "#D7E821",
-            hex8: '#D7E821FF',
-            hsl: { h: 65, s: 0.81, l: 0.52, a: 1 },
-            hsv: { h: 65, s: 0.84, v: 0.91, a: 1 },
-            rgba: { r: 215, g: 232, b: 33, a: 1 },
-            a: 1
-          }, location: 0, id: 0},
-        {color: {
-          hex: "#47D18C",
-          hex8: "#47D18CFF",
-          hsl: { h: 150, s: 0.6, l: 0.55, a: 1 },
-          hsv: { h: 150, s: 0.66, v: 0.82, a: 1 },
-          rgba: { r: 71, g: 209, b: 140, a: 1 },
-          a: 1
-        }, location: 100, id: 1}
-      ]
-    }
-  },
+  emits: ['changeID', 'updateStop', 'addColor'],
   computed: {
-    sortedColors() {
-      // 按照百分比将颜色排序
-      return this.gradientColors.sort((c1, c2) => {
-        return c1.location - c2.location
-      })
-    },
-    gradientColor() {
-      // bind背景色
-      const colorList = this.sortedColors.map(item => {
-        return `${item.color.hex} ${item.location}%`
+    // bind背景色
+    bindBg() {
+      const colorList = this.gradientColors.map(color => {
+        return `rgb(${color.r}, ${color.g}, ${color.b}) ${color.stop}%`
       }).join(', ')
       return `linear-gradient(90deg, ${colorList})`
     },
-    gradientColorWithAlpha() {
-      // preview-box背景色
-      const colorList = this.sortedColors.map(item => {
-        return `${item.color.hex8} ${item.location}%`
-      }).join(', ')
-      return `${this.type[0]}-gradient(${this.type[0] === 'conic' ? 'from ' : ''}${this.type[1]}, ${colorList})`
-    }
   },
   methods: {
     movePointer(e1) {
@@ -66,7 +32,7 @@ export default {
       // 如果point被按下，触发activeID更新，并绑定拖动事件
       if (point) {
         // activeID更新
-        this.activeID = Number(point.dataset.id)
+        this.$emit('changeID', Number(point.dataset.id))
         const bind = this.$refs['color-bind']
         const initialX = bind.offsetLeft
         // 拖动事件
@@ -75,15 +41,11 @@ export default {
           const newX = Math.max(0, Math.min(e2.clientX - initialX - 10, 1120))
           // 计算新的位置在bind中的百分比
           console.log()
-          const percent = newX * 100 / 1120
+          const newStop = newX * 100 / 1120
           // 更新point位置
           point.style.left = `${newX}px`
-          // 更新gradient对象中对应颜色的location
-          this.gradientColors.forEach(colorItem => {
-            if (colorItem.id === this.activeID) {
-              colorItem.location = percent
-            }
-          })
+          // 更新gradientColors对象中对应颜色的stop
+          this.$emit('updateStop', newStop)
         }
         // 鼠标抬起事件
         const onMouseUp = () => {
@@ -100,6 +62,7 @@ export default {
       }
     },
     async addColor(e) {
+      // 创建canvas画布
       const canvas = await html2canvas(this.$refs['color-bind'], {
         useCORS: true,
         scale: window.devicePixelRatio,
@@ -111,69 +74,36 @@ export default {
 
       const ctx = canvas.getContext("2d")
       const pixelData = Array.from(ctx.getImageData(x, y, 1, 1).data)
+      // 获取点击位置的颜色信息
       const [r, g, b, a] = pixelData
+      const stop = (x - 10) * 100 / 1120
       const id = Date.now()
-      const hex = `#${r.toString(16)}${g.toString(16)}${b.toString(16)}`
-      const hex8 = hex + a.toString(16)
-      this.gradientColors.push({color: {
-        hex,
-        hex8,
-        rgba: {r, g, b, a}
-      }, location: (x - 10) * 100 / 1120, id})
-      this.activeID = id
+      // 新建颜色断点对象
+      const newColor = {r, g, b, a, stop, id}
+      this.$emit('addColor', newColor)
+      this.$emit('changeID', id)
     },
     focusLabel(e, id) {
-      this.activeID = id
+      this.$emit('changeID', id)
       const input = e.target
-      const changeLocation = () => {
-        for (const colorItem of this.gradientColors) {
-          if (colorItem.id === this.activeID) {
-            const newLocation = Math.max(0, Math.min(100, parseInt(input.value)))
-            if (isNaN(newLocation)) {
-              input.value = colorItem.location
-            }else {
-              colorItem.location = newLocation
-            }
-            break
-          }
+      // 定义改变颜色stop函数
+      const changeStop = () => {
+        const newStop = Math.max(0, Math.min(100, parseInt(input.value)))
+        if (isNaN(newStop)) {
+          input.value = color.stop
+        }else {
+          this.$emit('updateStop', newStop)
         }
       }
       input.addEventListener('keydown', (e1) => {
         if (e1.key === 'Enter') {
-          changeLocation()
-          input.removeEventListener('blur', changeLocation)
+          changeStop()
+          input.removeEventListener('blur', changeStop)
           input.blur()
         }
       })
-      input.addEventListener('blur', changeLocation)
+      input.addEventListener('blur', changeStop)
     }
-  },
-  watch: {
-    currentColor: {
-      handler() {
-        this.gradientColors.forEach(colorItem => {
-          if (colorItem.id === this.activeID) {
-            colorItem['color'] = this.currentColor
-          }
-        })
-      },
-      deep: true,
-      immediate: true,
-    },
-    activeID() {
-      for (const colorItem of this.gradientColors) {
-        if (colorItem.id === this.activeID) {
-          this.$emit('IDChanged', colorItem.color)
-          break
-        }
-      }
-    },
-    gradientColorWithAlpha: {
-      handler() {
-        this.$emit('changeColor', this.gradientColorWithAlpha)
-      },
-      immediate: true
-    },
   },
   mounted() {
     document.addEventListener('keyup', (e) => {
@@ -184,7 +114,8 @@ export default {
               return colorItem.id === this.activeID
             })
             this.gradientColors.splice(deleteIndex, 1)
-            this.activeID = this.gradientColors[Math.floor(this.gradientColors.length / 2)].id
+            
+            this.$emit('changeID', this.gradientColors[Math.floor(this.gradientColors.length / 2)].id)
           }
         }
       }
@@ -201,15 +132,15 @@ export default {
     class="color-bind"
     ref="color-bind"
     @mousedown="movePointer">
-    <div class="bind-background" :style="{'background-image': gradientColor}" @click="addColor"></div>
+    <div class="bind-background" :style="{'background-image': bindBg}" @click="addColor"></div>
     <div class="bind-point"
-      v-for="item of gradientColors"
-      :key="item.id"
-      :data-id="item.id"
-      :style="{'left': `${item.location * 0.01 * 1120}px`, 'background-color': `${item.color.hex}`}"
-      :class="{'active': item.id === activeID}">
+      v-for="color of gradientColors"
+      :key="color.id"
+      :data-id="color.id"
+      :style="{'left': `${color.stop * 0.01 * 1120}px`, 'background-color': `rgb(${color.r}, ${color.g}, ${color.b})`}"
+      :class="{'active': color.id === activeID}">
       <div class="point-visual"></div>
-      <input class="point-label" :value="parseInt(item.location)" @focus="focusLabel($event, item.id)">
+      <input class="point-label" :value="parseInt(color.stop)" @focus="focusLabel($event, color.id)">
     </div>
   </div>
 </template>

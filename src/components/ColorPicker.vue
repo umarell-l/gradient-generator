@@ -12,31 +12,48 @@ export default {
   emits: ['changeBg'],
   data() {
     return {
+      // 当前（渐变）类型索引
       typeIndex: 0,
+      // 编辑中的颜色id
+      activeID: 1,
+      // 类型对象数组types
       types: [
         ['linear', '90deg'],
         ['radial', 'ellipse'],
         ['conic', '0deg']
       ],
-      currentColor: {
-        hex: "#47D18C",
-        hex8: "#47D18CFF",
-        hsl: { h: 150, s: 0.6, l: 0.55, a: 1 },
-        hsv: { h: 150, s: 0.66, v: 0.82, a: 1 },
-        rgba: { r: 71, g: 209, b: 140, a: 1 },
-        a: 0.5
-      }
+      // 当前颜色
+      currentColor: null,
+      // 渐变颜色断点数组
+      gradientColors: [
+        {r: 215, g: 232, b: 33, a: 1, stop: 0, id: 0},
+        {r: 71, g: 209, b: 140, a: 1, stop: 100, id: 1},
+      ]
+    }
+  },
+  computed: {
+    // 最终效果
+    gradient() {
+      const colorList = this.gradientColors.map(color => {
+        return `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a}) ${color.stop}%`
+      }).join(', ')
+      const type = this.types[this.typeIndex]
+      return `${type[0]}-gradient(${type[0] === 'conic' ? 'from ' : ''}${type[1]}, ${colorList})`
     }
   },
   methods: {
-    changeType() {
+    // 切换渐变类型
+    switchType() {
+      // 直接切换到类型对象数组中下一项
       if (this.typeIndex === this.types.length - 1) {
         this.typeIndex = 0
       } else {
         this.typeIndex++
       }
     },
-    changeDegree(e) {
+    // 旋转调节线性渐变方向
+    adjustDegree(e) {
+      // 设置point（视图中表示角度的点）
       let point = null
       if (e.target.className === 'point') {
         point = e.target
@@ -47,12 +64,15 @@ export default {
         const circle = point.parentElement
         // 确定旋转中心
         const rotateCenter = [circle.offsetLeft + 20 - document.documentElement.scrollLeft, circle.offsetTop + 20 - document.documentElement.scrollTop]
-        const times = 180 / Math.PI
+        // 乘积系数
+        const coeff = 180 / Math.PI
         const onMouseMove = (e1) => {
+          // 鼠标位置相对于旋转中心的位置
           const dX = e1.clientX - rotateCenter[0]
           const dY = e1.clientY - rotateCenter[1]
-          // 根据鼠标位置和旋转中心的关系计算旋转角
-          const atan = Math.round(times * Math.atan(dX / dY))
+          // 根据鼠标位置和旋转中心的关系计算反正切值
+          const atan = Math.round(coeff * Math.atan(dX / dY))
+          // 利用反正切值和位置关系更新旋转角
           let rot = 0
           if (dY >= 0) {
             rot = 180 - atan
@@ -77,6 +97,41 @@ export default {
         document.addEventListener('mouseup', onMouseUp)
       }
     }
+  },
+  watch: {
+    activeID: {
+      handler() {
+        for (const color of this.gradientColors) {
+          if (color.id === this.activeID) {
+            const {r, g, b, a} = color
+            this.currentColor = {r, g, b, a}
+            break
+          }
+        }
+      },
+      immediate: true
+    },
+    currentColor() {
+      for (const color of this.gradientColors) {
+        if (color.id === this.activeID) {
+          Object.assign(color, this.currentColor.rgba)
+          break
+        }
+      }
+    },
+    gradientColors: {
+      handler() {
+        this.gradientColors.sort((c1, c2) => c1.stop - c2.stop)
+      },
+      deep: true,
+      immediate: true,
+    },
+    gradient: {
+      handler() {
+        this.$emit('changeBg', this.gradient)
+      },
+      immediate: true,
+    }
   }
 }
 </script>
@@ -86,16 +141,22 @@ export default {
   <div class="color-picker">
     <SetGradient
       :type="types[typeIndex]"
-      @changeType="changeType"
-      @changeDegree="changeDegree"
-      @editDegree="newDegree => types[typeIndex][1] = parseInt(newDegree) + 'deg'"
-      @changeShape="types[typeIndex][1] = (types[typeIndex][1] === 'ellipse') ? 'circle' : 'ellipse'" />
+      @changeType="switchType"
+      @changeDegree="adjustDegree"
+      @setDegree="newDegree => types[typeIndex][1] = parseInt(newDegree) + 'deg'"
+      @switchShape="types[typeIndex][1] = (types[typeIndex][1] === 'ellipse') ? 'circle' : 'ellipse'" />
     <ColorBind
-      ref="colorBind"
+      :activeID
       :currentColor
+      :gradientColors
       :type="types[typeIndex]"
-      @changeColor="newGrident => $emit('changeBg', newGrident)"
-      @IDChanged="newColor => currentColor = newColor" />
+      @changeID="newID => activeID = newID"
+      @updateStop="newStop => gradientColors.forEach(color => {
+        if (color.id === this.activeID) {
+          color.stop = newStop
+        }
+      })"
+      @addColor="newColor => gradientColors.push(newColor)" />
     <Sketch v-model="currentColor" />
   </div>
 </template>

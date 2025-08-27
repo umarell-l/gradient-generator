@@ -8,7 +8,7 @@ export default {
   },
   data() {
     return {
-      gradientColor: '#194d33'
+      gradientColor: ''
     }
   }
 }
