@@ -104,23 +104,6 @@ export default {
       })
       input.addEventListener('blur', changeStop)
     }
-  },
-  mounted() {
-    document.addEventListener('keyup', (e) => {
-      if (e.key === 'Delete' || e.key === 'Backspace') {
-        if (document.activeElement.tagName !== 'INPUT') {
-          if (this.gradientColors.length > 2) {
-            const deleteIndex = this.gradientColors.findIndex(colorItem => {
-              return colorItem.id === this.activeID
-            })
-            this.gradientColors.splice(deleteIndex, 1)
-            
-            this.$emit('changeID', this.gradientColors[Math.floor(this.gradientColors.length / 2)].id)
-          }
-        }
-      }
-    })
-    document.ondragstart = () => false
   }
 }
 </script>

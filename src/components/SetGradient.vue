@@ -1,7 +1,9 @@
 <script>
 export default {
-  emits: ['switchType', 'adjustDegree', 'setDegree', 'switchShape'],
+  emits: ['switchType', 'adjustDegree', 'setDegree', 'switchShape', 'changeID', 'deleteColor'],
   props: {
+    activeID: Number,
+    gradientColors: Object,
     type: Array,
   },
   methods: {
@@ -25,6 +27,9 @@ export default {
       })
       input.addEventListener('blur', onChange)
     }
+  },
+  mounted() {
+    this.$refs['set-colors'].onselectstart = () => false
   }
 }
 </script>
@@ -43,6 +48,21 @@ export default {
         <div class="set-shape" @click="$emit('switchShape')" :style="{'width': `${(type[1] === 'ellipse') ? 60 : 40}px`}"></div>
       </div>
     </div>
+    <div class="set-colors" ref="set-colors">
+      <ul class="color-list">
+        <li
+          class="color"
+          v-for="color of this.gradientColors"
+          :key="color.id"
+          :style="{'background-color': `rgb(${color.r}, ${color.g}, ${color.b})`}"
+          :class="{'active': color.id === activeID}"
+          @click.self="$emit('changeID', color.id)">
+          {{ parseInt(color.stop) }}
+          <button class="delete" @click="$emit('deleteColor', color.id)">×</button>
+        </li>
+      </ul>
+      <!-- <div style="height: 500px;width: 50px;">nihao nihaonih aoaf q 9i poh efnv disal fy l9q23r onuo fhca isolhk3d129rhi</div> -->
+    </div>
   </div>
 </template>
 
@@ -53,9 +73,10 @@ export default {
   --set-gradient-bottom: 20px;
 
   --set-type-width: 160px;
-  --set-type-height: 46px;
+  --set-type-height: 50px;
   --set-type-border: 2px;
   --set-type-radius: 10px;
+  --set-item-padding: 30px;
   .set-gradient {
     width: var(--set-gradient-width);
     height: var(--set-gradient-height);
@@ -64,12 +85,12 @@ export default {
     justify-content: start;
     align-items: center;
     .setting {
-      height: 100%;
+      // height: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: start;
-      padding-right: 30px;
+      padding-right: var(--set-item-padding);
       border-right: 1px solid #eee;
       .gradient-type {
         width: var(--set-type-width);
@@ -132,6 +153,48 @@ export default {
           border: 4px solid #333;
           border-radius: 50%;
           cursor: pointer;
+        }
+      }
+    }
+    .set-colors {
+      flex: 0.5;
+      height: 100%;
+      padding: 1px var(--set-item-padding);
+      border-right: 1px solid #eee;
+      transform: translateZ(0);
+      overflow-y: auto;
+      .color-list {
+        display: flex;
+        flex-wrap: wrap;
+        .color {
+          position: relative;
+          height: 40px;
+          width: 40px;
+          border: 3px solid #666;
+          border-radius: 8px;
+          margin-right: 60px;
+          margin-bottom: 10px;
+          line-height: 34px;
+          text-align: center;
+          cursor: default;
+          .delete {
+            position: absolute;
+            left: 37px;
+            width: 40px;
+            background-color: transparent;
+            border: none;
+            color: #aaa;
+            line-height: 34px;
+            font-size: 20px;
+            cursor: pointer;
+            &:hover {
+              color: #777;
+            }
+          }
+        }
+        .active {
+          border: 3px solid #333;
+          box-shadow: 0 0 0 1px #333;
         }
       }
     }

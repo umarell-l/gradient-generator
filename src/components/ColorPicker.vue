@@ -96,6 +96,15 @@ export default {
         document.addEventListener('mousemove', onMouseMove)
         document.addEventListener('mouseup', onMouseUp)
       }
+    },
+    deleteColorByID(deleteID) {
+      if (this.gradientColors.length > 2) {
+        const deleteIndex = this.gradientColors.findIndex(color => {
+          return color.id === deleteID
+        })
+        this.gradientColors.splice(deleteIndex, 1)
+        this.activeID = this.gradientColors[Math.floor(this.gradientColors.length / 2)].id
+      }
     }
   },
   watch: {
@@ -132,6 +141,16 @@ export default {
       },
       immediate: true,
     }
+  },
+  mounted() {
+    document.addEventListener('keyup', (e) => {
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (document.activeElement.tagName !== 'INPUT') {
+          this.deleteColorByID(this.activeID)
+        }
+      }
+    })
+    document.ondragstart = () => false
   }
 }
 </script>
@@ -140,11 +159,15 @@ export default {
 <template>
   <div class="color-picker">
     <SetGradient
+      :activeID
+      :gradientColors
       :type="types[typeIndex]"
       @switchType="switchType"
       @adjustDegree="adjustDegree"
       @setDegree="newDegree => types[typeIndex][1] = parseInt(newDegree) + 'deg'"
-      @switchShape="types[typeIndex][1] = (types[typeIndex][1] === 'ellipse') ? 'circle' : 'ellipse'" />
+      @switchShape="types[typeIndex][1] = (types[typeIndex][1] === 'ellipse') ? 'circle' : 'ellipse'"
+      @changeID="newID => activeID = newID"
+      @deleteColor="deleteColorByID" />
     <ColorBind
       :activeID
       :currentColor
