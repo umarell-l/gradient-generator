@@ -1,11 +1,11 @@
 <script>
 export default {
-  emits: ['changeType', 'changeDegree', 'editDegree', 'changeShape'],
+  emits: ['switchType', 'adjustDegree', 'setDegree', 'switchShape'],
   props: {
     type: Array,
   },
   methods: {
-    editDegree(e) {
+    setDegree(e) {
       const input = e.target
       const onChange = () => {
         const newDegree = Math.max(0, Math.min(359, parseInt(input.value)))
@@ -13,7 +13,7 @@ export default {
           input.value = parseInt(this.type[1])
         }
         else {
-          this.$emit('editDegree', newDegree)
+          this.$emit('setDegree', newDegree)
         }
       }
       input.addEventListener('keydown', (e1) => {
@@ -32,15 +32,15 @@ export default {
 <template>
   <div class="set-gradient">
     <div class="setting">
-      <button class="gradient-type" @click.prevent="$emit('changeType')">{{ type[0] }}</button>
+      <button class="gradient-type" @click.prevent="$emit('switchType')">{{ type[0] }}</button>
       <div class="gradient-degree" v-show="type[0] !== 'radial'">
-        <div class="set-degree" @mousedown="$emit('changeDegree', $event)">
+        <div class="set-degree" @mousedown="$emit('adjustDegree', $event)">
           <div class="point" :style="{'transform': `rotate(${parseInt(type[1])}deg)`}"></div>
         </div>
-        <div class="degree-label"><input type="text" :value="parseInt(type[1])" @focus="editDegree">°</div>
+        <div class="degree-label"><input type="text" :value="parseInt(type[1])" @focus="setDegree">°</div>
       </div>
       <div class="gradient-shape" v-show="type[0] === 'radial'">
-        <div class="set-shape" @click="$emit('changeShape')" :style="{'width': `${(type[1] === 'ellipse') ? 60 : 40}px`}"></div>
+        <div class="set-shape" @click="$emit('switchShape')" :style="{'width': `${(type[1] === 'ellipse') ? 60 : 40}px`}"></div>
       </div>
     </div>
   </div>

@@ -141,8 +141,8 @@ export default {
   <div class="color-picker">
     <SetGradient
       :type="types[typeIndex]"
-      @changeType="switchType"
-      @changeDegree="adjustDegree"
+      @switchType="switchType"
+      @adjustDegree="adjustDegree"
       @setDegree="newDegree => types[typeIndex][1] = parseInt(newDegree) + 'deg'"
       @switchShape="types[typeIndex][1] = (types[typeIndex][1] === 'ellipse') ? 'circle' : 'ellipse'" />
     <ColorBind
