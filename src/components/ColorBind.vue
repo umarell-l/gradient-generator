@@ -1,15 +1,14 @@
 
 <script>
+import { mapWritableState } from 'pinia'
+import { gradientStore } from '@/stores/gradient'
 import html2canvas from 'html2canvas'
 export default {
-  props: {
-    activeID: Number,
-    currentColor: Object,
-    gradientColors: Array,
-    type: Array,
-  },
-  emits: ['changeID', 'updateStop', 'addColor'],
   computed: {
+    ...mapWritableState(gradientStore, [
+      'gradientColors',
+      'activeID',
+    ]),
     // bind背景色
     bindBg() {
       const colorList = this.gradientColors.map(color => {
@@ -32,7 +31,7 @@ export default {
       // 如果point被按下，触发activeID更新，并绑定拖动事件
       if (point) {
         // activeID更新
-        this.$emit('changeID', Number(point.dataset.id))
+        this.activeID = Number(point.dataset.id)
         const bind = this.$refs['color-bind']
         const initialX = bind.offsetLeft
         // 拖动事件
@@ -45,7 +44,12 @@ export default {
           // 更新point位置
           point.style.left = `${newX}px`
           // 更新gradientColors对象中对应颜色的stop
-          this.$emit('updateStop', newStop)
+          for (const color of this.gradientColors) {
+            if (color.id === this.activeID) {
+              color.stop = newStop
+              break
+            }
+          }
         }
         // 鼠标抬起事件
         const onMouseUp = () => {
@@ -80,11 +84,11 @@ export default {
       const id = Date.now()
       // 新建颜色断点对象
       const newColor = {r, g, b, a, stop, id}
-      this.$emit('addColor', newColor)
-      this.$emit('changeID', id)
+      this.gradientColors.push(newColor)
+      this.activeID = id
     },
     focusLabel(e, id) {
-      this.$emit('changeID', id)
+      this.activeID = id
       const input = e.target
       // 定义改变颜色stop函数
       const changeStop = () => {
@@ -92,7 +96,12 @@ export default {
         if (isNaN(newStop)) {
           input.value = color.stop
         }else {
-          this.$emit('updateStop', newStop)
+          for (const color of this.gradientColors) {
+            if (color.id === this.activeID) {
+              color.stop = newStop
+              break
+            }
+          }
         }
       }
       input.addEventListener('keydown', (e1) => {
