@@ -114,6 +114,7 @@ export default {
         }
       }
     },
+    // 预设改变时的响应函数
     presetChanged() {
       const activePreset = this.presetList[this.presetIndex]
       // 给gradientColors赋值为指定预设中的渐变色
@@ -126,7 +127,39 @@ export default {
       const index = this.types.findIndex(type => type[0] === this.type[0])
       this.types[index][1] = this.type[1]
       this.typeIndex = index
-    }
+    },
+    // 随机生成渐变色
+    randomGenerating() {
+      // 随机生成颜色函数
+      function getRandomColor() {
+        const r = Math.floor(Math.random() * 256)
+        const g = Math.floor(Math.random() * 256)
+        const b = Math.floor(Math.random() * 256)
+        return [r, g, b]
+      }
+      const [r1, g1, b1] = getRandomColor()
+      const [r2, g2, b2] = getRandomColor()
+      const [r3, g3, b3] = getRandomColor()
+      const c1 = {r:r1, g: g1, b: b1, a: 1, stop: 0, id: Date.now()}
+      const c2 = {r:r2, g: g2, b: b2, a: 1, stop: Math.random() * 40 + 30, id: Date.now() + 1}
+      const c3 = {r:r3, g: g3, b: b3, a: 1, stop: 100, id: Date.now() + 2}
+      const c4 = {r:r1, g: g1, b: b1, a: 1, stop: 100, id: Date.now() + 3}
+      if (this.type[0] === 'linear') {
+        // 线性渐变时，取三种随机颜色
+        this.type[1] = Math.floor(Math.random() * 360) + 'deg'
+        this.gradientColors.splice(0, this.gradientColors.length, c1, c2, c3)
+      } else if (this.type[0] === 'radial') {
+        // 径向渐变时，取两种随机颜色
+        this.type[1] = 'circle'
+        this.gradientColors.splice(0, this.gradientColors.length, c1, c3)
+      } else {
+        // 锥形渐变时，取两种随机颜色，并且首尾相同
+        this.type[1] = Math.floor(Math.random() * 360) + 'deg'
+        this.gradientColors.splice(0, this.gradientColors.length, c1, c2, c4)
+      }
+      // 重置当前颜色id
+      this.activeID = this.gradientColors[0].id
+    },
   },
   computed: {
     ...mapState(gradientStore, [
@@ -186,7 +219,7 @@ export default {
           class="color"
           v-for="color of this.gradientColors"
           :key="color.id"
-          :style="{'background-color': `rgb(${color.r}, ${color.g}, ${color.b})`}"
+          :style="{'background-color': `rgb(${color.r}, ${color.g}, ${color.b})`, 'color': (Math.max(color.r, color.g, color.b) > 160) ? '#000' : '#fff'}"
           :class="{'active': color.id === activeID}"
           @click.self="activeID = color.id">
           {{ parseInt(color.stop) }}
@@ -208,6 +241,9 @@ export default {
           :style="{'background': presetGradient[index]}"
           @click="presetIndex = index"></li>
       </ul>
+      <div class="random">
+        <button @click="randomGenerating">&#8635</button>
+      </div>
     </div>
   </div>
 </template>
@@ -399,6 +435,23 @@ export default {
         .active {
           border: 3px solid #666;
           box-shadow: 0 0 0 1px #666;
+        }
+      }
+      .random {
+        width: 60px;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        button {
+          width: 60px;
+          height: 100%;
+          background-color: #eee;
+          border: 3px solid #ccc;
+          border-radius: 10px;
+          font-size: 30px;
+          font-weight: 700;
+          cursor: pointer;
         }
       }
     }
