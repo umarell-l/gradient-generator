@@ -11,7 +11,6 @@ export default {
     ColorBind,
     SetGradient
   },
-  emits: ['changeBg'],
   methods: {
     // 删除指定id颜色
     deleteColorByID(deleteID) {
@@ -36,13 +35,6 @@ export default {
       'activeID',
       'currentColor',
     ]),
-    // 最终效果
-    gradient() {
-      const colorList = this.gradientColors.map(color => {
-        return `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a}) ${color.stop}%`
-      }).join(', ')
-      return `${this.type[0]}-gradient(${this.type[0] === 'conic' ? 'from ' : ''}${this.type[1]}, ${colorList})`
-    }
   },
   created() {
     this.type = this.presetList[this.presetIndex].type
