@@ -16,6 +16,7 @@
     "@simonwep/pickr": "^1.9.1",
     "html2canvas": "^1.4.1",
     "pinia": "^3.0.3",
+    "pinia-persistedstate-plugin": "^0.1.0",
     "vue": "^3.5.18",
     "vue-color": "^3.3.1"
   },

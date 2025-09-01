@@ -1,4 +1,5 @@
 import { defineStore } from "pinia"
+import { createPersistedState } from "pinia-persistedstate-plugin";
 
 export const gradientStore = defineStore('gradient', {
   state() {
