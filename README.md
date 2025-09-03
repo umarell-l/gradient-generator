@@ -11,9 +11,15 @@ gradient-generator：一款可视化渐变生成工具，支持实时预览与CS
 |​一键复制代码|navigator.clipboard + 成功状态反馈|
 
 ## 功能演示
+#### 动态更新渐变色
 ![动态更新渐变色](./demonstration/dynamicChange.gif)
+#### 颜色断点拖拽
 ![颜色断点拖拽](./demonstration/pointDragging.gif)
+#### 轮盘拖动+角度输入
 ![轮盘拖动+角度输入](./demonstration//rouletteDragging.gif)
+#### 多渐变类型
 ![多渐变类型](./demonstration/typeSwitching.gif)
+#### 增删预设
 ![增删预设](./demonstration/preset.gif)
+#### 随机生成、一键复制
 ![随机生成、一键复制](./demonstration/random+copy.gif)
