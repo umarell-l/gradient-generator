@@ -104,16 +104,11 @@ export default {
 
 
 <style lang="less">
-:root {
-  --picker-width: 1200px;
-  // --picker-height: 900px;
-  --picker-padding: 29px;
-  --picker-border-width: 1px;
-  .color-picker {
-    width: var(--picker-width);
-    // height: var(--picker-height);
+.color-picker {
+    width: 1200px;
     margin: 40px auto;
-    padding: var(--picker-padding);
+    padding: 29px;
+    background-color: var(--color-bg-tertiary);
     border: 1px solid #ccc;
     border-radius: 20px;
     .vc-sketch {
@@ -121,6 +116,7 @@ export default {
       width: 100%;
       height: 300px;
       margin-top: 20px;
+      background-color: var(--color-bg-tertiary);
       display: flex;
       flex-direction: column;
       flex-wrap: wrap;
@@ -192,5 +188,4 @@ export default {
       }
     }
   }
-}
 </style>

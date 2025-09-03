@@ -139,69 +139,47 @@ export default {
 
 
 <style lang="less">
-:root {
-  --bind-bg-left: 5px;
-  --bind-bg-bottom: 30px;
-  --bind-height: 24px;
-  --bind-width: calc(100% - 2 * var(--bind-bg-left));
-  --bind-bg-border: 1px solid #ddd;
-  --bind-radius: 12px;
 
-  --bind-point-top: -4px;
-  --bind-point-width: 20px;
-  --bind-point-height: 32px;
-  --bind-point-border: 3px solid #414141;
-  --bind-point-radius: 10px;
-  --bind-visual-width: 14px;
-  --bind-visual-height: 26px;
-  --bind-visual-radius: 7px;
-  --bind-label-left: -12px;
-  --bind-label-top: 41px;
-  --bind-label-width: 40px;
-  --bind-labal-height: 30px;
-  --bind-label-border: 1px solid #ccc;
-  --bind-label-radius: 5px;
-  --bind-label-font-size: 16px;
-  --bind-label-active-top: 34px;
-  --bind-label-active-border: 2px solid #777;
-  .color-bind {
+.color-bind {
     border-bottom: 1px solid #eee;
     position: relative;
     .bind-background {
-      width: var(--bind-width);
-      height: var(--bind-height);
-      margin-left: var(--bind-bg-left);
-      margin-bottom: var(--bind-bg-bottom);
-      border: var(--bind-bg-border);
-      border-radius: var(--bind-radius);
+      width: calc(100% - 2 * 5px);
+      height: 24px;
+      margin-left: 5px;
+      margin-bottom: 30px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
       cursor: copy;
     }
     .bind-point {
       position: absolute;
-      top: var(--bind-point-top);
-      width: var(--bind-point-width);
-      height: var(--bind-point-height);
-      border: var(--bind-point-border);
-      border-radius: var(--bind-point-radius);
+      top: -4px;
+      width: 20px;
+      height: 32px;
+      border: 3px solid #414141;
+      border-radius: 10px;
       cursor: pointer;
+      box-shadow: var(--shadow);
       .point-visual {
-        width: var(--bind-visual-width);
-        height: var(--bind-visual-height);
+        width: 14px;
+        height: 26px;
         border: 2px solid #fff;
-        border-radius: var(--bind-visual-radius);
+        border-radius: 7px;
         z-index: -1;
       }
       .point-label {
         position: absolute;
-        left: var(--bind-label-left);
-        top: var(--bind-label-top);
-        width: var(--bind-label-width);
-        height: var(--bind-labal-height);
-        border: var(--bind-label-border);
+        left: -12px;
+        top: 41px;
+        width: 40px;
+        height: 30px;
+        background-color: var(--color-bg-tertiary);
+        border: 1px solid #ccc;
         outline: none;
-        border-radius: var(--bind-label-radius);
+        border-radius: 5px;
         text-align: center;
-        font-size: var(--bind-label-font-size);
+        font-size: 16px;
       }
     }
     .active {
@@ -209,10 +187,9 @@ export default {
       box-shadow: 0 0 3px 4px #fff;
       z-index: 1;
       .point-label {
-        top: var(--bind-label-active-top);
-        border: var(--bind-label-active-border);
+        top: 34px;
+        border: 2px solid #777;
       }
     }
   }
-}
 </style>

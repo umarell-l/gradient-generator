@@ -4,3 +4,47 @@
   box-sizing: border-box;
   list-style: none;
 }
+:root {
+  --color-bg-primary: #eeeeee;
+  --color-bg-secondary: #f3f3f3;
+  --color-bg-tertiary: #fff;
+  --color-text-primary: #000;
+  --color-text-secondary: #333;
+  --color-text-tertiary: #fff;
+  --color-text-success: #3dae4f;
+  --color-text-danger: #cf423a;
+  --color-accent: #6e85f7;
+  --color-success: #60d674;
+  --color-danger: #fb6a62;
+  --border-radius-sm: 4px;
+  --btn-shadow: inset 6px 10px 16px #0005, 4px 4px 8px rgba(0, 0, 0, 0.2), 6px 6px 12px rgba(0, 0, 0, 0.05), inset -6px -10px 30px #fffa;
+  --btn-shadow-hover: inset 4px 8px 16px #0005, 4px 7px 8px rgba(0, 0, 0, 0.2), 6px 9px 12px rgba(0, 0, 0, 0.05), inset -8px -12px 30px #fffa;
+  --roulette-shadow: inset 4px 6px 12px #0005, 2px 2px 4px rgba(0, 0, 0, 0.2), 3px 3px 6px rgba(0, 0, 0, 0.05), inset -4px -6px 12px #fffa;
+  --roulette-linear-bg: #8fe88f;
+  --roulette-linear-radius: 60% 40% 50% 45% / 45% 70% 30% 55%;
+  --roulette-radial-bg: #f5b4cd;
+  --roulette-conic-bg: #e3cc6d;
+  --roulette-conic-radius: 50% 70% 70% 55% / 60% 45% 60% 55%;
+}
+:root button {
+  background-color: transparent;
+  border: none;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+  box-shadow: var(--btn-shadow);
+}
+:root button:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--btn-shadow-hover);
+}
+:root button:active {
+  transform: translateY(0);
+}
+:root body {
+  background-color: var(--color-bg-primary);
+}
+:root input {
+  background-color: transparent;
+}

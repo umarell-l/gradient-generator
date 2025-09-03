@@ -5,19 +5,31 @@ export default {
   },
   methods: {
     resizePreview(e) {
+      let previewBox = null
       if (e.target.className === 'drag') {
-        const previewBox = e.target.parentElement
+        previewBox = e.target.parentElement
+      }
+      else if (e.target.className === 'target') {
+        previewBox = e.target.parentElement.parentElement
+      }
+      if (previewBox) {
         const onMouseMove = (e2) => {
           previewBox.style.height = Math.max(300, e2.clientY + document.documentElement.scrollTop + 5) + 'px'
         }
         const onMouseUp = () => {
           document.removeEventListener('mousemove', onMouseMove)
           document.removeEventListener('mouseup', onMouseUp)
+          document.onselectstart = null
         }
         document.addEventListener('mousemove', onMouseMove)
         document.addEventListener('mouseup', onMouseUp)
+        document.onselectstart = () => false
       }
     }
+  },
+  mounted() {
+    this.$refs.drag.ondragstart = () => false
+    this.$refs.drag.onselectstart = () => false
   }
 }
 </script>
@@ -26,7 +38,9 @@ export default {
   <div class="preview-box" @mousedown="resizePreview">
     <div class="background"></div>
     <div class="preview" :style="{'background': gradientColor}"></div>
-    <div class="drag"></div>
+    <div class="drag" ref="drag">
+      <div class="target">...</div>
+    </div>
   </div>
 </template>
 
@@ -55,6 +69,12 @@ export default {
     bottom: 0px;
     cursor: row-resize;
     transition: all 0.2s;
+    .target {
+      width: 10px;
+      margin: -22px auto 0;
+      color: #eee;
+      font-size: 24px;
+    }
     &:hover {
       background-color: #0003;
     }

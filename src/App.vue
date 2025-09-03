@@ -44,7 +44,7 @@ export default {
     // 最终效果
     gradient() {
       const colorList = this.gradientColors.map(color => {
-        return `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a}) ${Math.floor(color.stop)}%`
+        return `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a}) ${color.stop.toFixed(1)}%`
       }).join(', ')
       return `${this.type[0]}-gradient(${this.type[0] === 'conic' ? 'from ' : ''}${this.type[1]}, ${colorList})`
     }
@@ -81,16 +81,13 @@ export default {
 .copy {
   width: 60px;
   height: 36px;
-  background-color: #0004;
   position: fixed;
   right: 10px;
-  top: 10px;
-  border: 1px solid #000;
+  top: 13px;
   border-radius: 5px;
-  box-shadow: 0 0 0 1px #fff;
-  color: #fff;
   cursor: pointer;
   transition: all 0.2s;
+  font-size: 14px;
 }
 .gradient {
   width: calc(100% - 200px);

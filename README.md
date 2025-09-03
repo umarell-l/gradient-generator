@@ -8,4 +8,4 @@ gradient-generator：一款可视化渐变生成工具，支持实时预览与CS
 |​实时预览|基于color的设置动态更新background属性|
 |多渐变类型|支持线性渐变（圆盘拖动+角度输入）、径向渐变（圆形/椭圆）、锥形渐变| 
 |​随机生成|预设模板+按概率生成美学渐变|  
-|​一键复制代码|navigator.clipboard+ 成功状态反馈|
+|​一键复制代码|navigator.clipboard + 成功状态反馈|

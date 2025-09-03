@@ -1,6 +1,7 @@
 <script>
 import { mapState, mapWritableState } from 'pinia'
 import { gradientStore } from '@/stores/gradient'
+import { nextTick } from 'vue'
 export default {
   emits: ['deleteColor'],
   data() {
@@ -37,9 +38,9 @@ export default {
         point = e.target.children[0]
       }
       if (point) {
-        const circle = point.parentElement
+        const roulette = point.parentElement
         // 确定旋转中心
-        const rotateCenter = [circle.offsetLeft + 20 - document.documentElement.scrollLeft, circle.offsetTop + 20 - document.documentElement.scrollTop]
+        const rotateCenter = [roulette.offsetLeft + 20 - document.documentElement.scrollLeft, roulette.offsetTop + 20 - document.documentElement.scrollTop]
         // 乘积系数
         const coeff = 180 / Math.PI
         const onMouseMove = (e1) => {
@@ -67,6 +68,7 @@ export default {
           document.removeEventListener('mouseup', onMouseUp)
           document.onselectstart = () => null
         }
+        onMouseMove(e)
 
         document.onselectstart = () => false
         document.addEventListener('mousemove', onMouseMove)
@@ -191,10 +193,33 @@ export default {
   },
   watch: {
     // 当前预设改变
-    presetIndex() {
+    async presetIndex() {
       // 触发预设改变method
       this.presetChanged()
+      await nextTick()
+      const presetDomList = this.$refs['preset-list']
+      const listTop = presetDomList.scrollTop
+      const itemTop = presetDomList.children[this.presetIndex].offsetTop
+      console.log(itemTop)
+      if (itemTop < listTop + 10) {
+        presetDomList.scrollTop = itemTop - 10
+      } else if (itemTop - 80 > listTop) {
+        presetDomList.scrollTop = itemTop - 50
+      }
     },
+    activeID() {
+      const index = this.gradientColors.findIndex(color => {
+        return color.id === this.activeID
+      })
+      const colorList = this.$refs['color-list']
+      const listTop = colorList.scrollTop
+      const itemTop = colorList.children[index].offsetTop
+      if (itemTop < listTop) {
+        colorList.scrollTop = itemTop
+      } else if (itemTop - 80 > listTop) {
+        colorList.scrollTop = itemTop - 70
+      }
+    }
   }
 }
 </script>
@@ -204,17 +229,18 @@ export default {
     <div class="setting">
       <button class="gradient-type" @click.prevent="switchType">{{ type[0] }}</button>
       <div class="gradient-degree" v-show="type[0] !== 'radial'">
-        <div class="set-degree" @mousedown="adjustDegree">
+        <div class="set-degree" @mousedown="adjustDegree" :style="
+        {'background-color': `var(--roulette-${(type[0] === 'linear') ? 'linear' : 'conic'}-bg)`, 'border-radius': `var(--roulette-${(type[0] === 'linear') ? 'linear' : 'conic'}-radius)`}">
           <div class="point" :style="{'transform': `rotate(${parseInt(type[1])}deg)`}"></div>
         </div>
         <div class="degree-label"><input type="text" :value="parseInt(type[1])" @focus="setDegree">°</div>
       </div>
       <div class="gradient-shape" v-show="type[0] === 'radial'">
-        <div class="set-shape" @click="type[1] = (type[1] === 'ellipse') ? 'circle' : 'ellipse'" :style="{'width': `${(type[1] === 'ellipse') ? 60 : 40}px`}"></div>
+        <div class="set-shape" @click="type[1] = (type[1] === 'ellipse') ? 'circle' : 'ellipse'" :style="{'width': `${(type[1] === 'ellipse') ? 70 : 50}px`}"></div>
       </div>
     </div>
     <div class="set-colors" ref="set-colors">
-      <ul class="color-list">
+      <ul class="color-list" ref="color-list">
         <li
           class="color"
           v-for="color of this.gradientColors"
@@ -232,13 +258,14 @@ export default {
         <button class="add-preset" @click="addPreset">+</button>
         <button class="delete-preset" @click="deletePreset">×</button>
       </div>
-      <ul class="preset-list">
+      <ul class="preset-list" ref="preset-list">
         <li
           v-for="(preset, index) in presetList"
           class="preset-item"
           :class="{'active': index === presetIndex}"
           :key="preset.id"
           :style="{'background': presetGradient[index]}"
+          
           @click="presetIndex = index"></li>
       </ul>
       <div class="random">
@@ -249,209 +276,222 @@ export default {
 </template>
 
 <style lang="less">
-:root {
-  --set-gradient-width: 100%;
-  --set-gradient-height: 120px;
-  --set-gradient-bottom: 20px;
-
-  --set-type-width: 160px;
-  --set-type-height: 50px;
-  --set-type-border: 2px;
-  --set-type-radius: 10px;
-  --set-item-padding: 30px;
-  .set-gradient {
-    width: var(--set-gradient-width);
-    height: var(--set-gradient-height);
-    margin-bottom: var(--set-gradient-bottom);
+.set-gradient {
+  width: 100%;
+  height: 120px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  .setting {
+    // height: 100%;
     display: flex;
-    justify-content: start;
+    flex-direction: column;
     align-items: center;
-    .setting {
-      // height: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: start;
-      padding-right: var(--set-item-padding);
-      border-right: 1px solid #eee;
-      .gradient-type {
-        width: var(--set-type-width);
-        height: var(--set-type-height);
-        margin-bottom: 20px;
-        background-color: #eee;
-        border: var(--set-type-border) solid #ccc;
-        border-radius: var(--set-type-radius);
-        line-height: calc(var(--set-type-height) - 6px);
-        text-align: center;
-        color: #555;
-        font-size: 20px;
-        font-weight: 700;
-        cursor: pointer;
+    justify-content: start;
+    padding-right: 30px;
+    border-right: 1px solid #ddd;
+    .gradient-type {
+      width: 160px;
+      height: 50px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      line-height: 44px;
+      color: #555;
+      font-size: 20px;
+      font-weight: 700;
+      cursor: pointer;
+      &:hover {
+        color: var(--color-accent);
       }
-      .gradient-degree, .gradient-shape {
-        width: 100%;
-        display: flex;
-        justify-content: space-evenly;
-        align-items: center;
-        .set-degree {
-          position: relative;
-          width: 40px;
-          height: 40px;
-          border: 4px solid #333;
-          border-radius: 20px;
-          cursor: pointer;
-          .point {
-            width: 10px;
-            height: 10px;
-            border-radius: 5px;
-            background-color: #333;
-            position: absolute;
-            top: -7px;
-            right: 11px;
-            transform-origin: 5px 23px;
-          }
+    }
+    .gradient-degree, .gradient-shape {
+      width: 100%;
+      display: flex;
+      justify-content: space-evenly;
+      align-items: center;
+      .set-degree {
+        position: relative;
+        width: 50px;
+        height: 50px;
+        border-radius: var(--roulette-linear-radius);
+        box-shadow: var(--roulette-shadow);
+        .point {
+          width: 10px;
+          height: 10px;
+          border-radius: 5px;
+          background-color: #fff;
+          position: absolute;
+          top: 6px;
+          left: 20px;
+          transform-origin: 5px 19px;
         }
-        .degree-label {
-          width: 50px;
+      }
+      .degree-label {
+        width: 50px;
+        font-size: 18px;
+        font-weight: 700;
+        input {
+          width: 36px;
+          border: none;
+          padding-right: 3px;
+          margin: 2px;
+          text-align: right;
           font-size: 18px;
           font-weight: 700;
-          input {
-            width: 36px;
-            text-align: right;
-            font-size: 18px;
-            font-weight: 700;
-            outline: none;
-            border: none;
-            padding-right: 3px;
-            margin: 2px;
-            &:focus {
-              outline: 2px solid #000;
-              border-radius: 5px;
-            }
+          outline: none;
+          &:focus {
+            outline: 2px solid #000;
+            border-radius: 5px;
           }
         }
-        .set-shape {
-          height: 40px;
-          border: 4px solid #333;
-          border-radius: 50%;
-          cursor: pointer;
-        }
+      }
+      .set-shape {
+        height: 50px;
+        background-color: var(--roulette-radial-bg);
+        border-radius: 50%;
+        box-shadow: var(--roulette-shadow);
+        cursor: pointer;
       }
     }
-    .set-colors {
-      flex: 0.5;
-      height: 100%;
-      padding: 0 var(--set-item-padding);
-      border-right: 1px solid #eee;
-      .color-list {
-        display: flex;
-        flex-wrap: wrap;
-        height: 100%;
-        padding: 1px;
-        transform: translateZ(0);
-        overflow-y: auto;
-        .color {
-          position: relative;
-          height: 40px;
-          width: 40px;
-          border: 3px solid #aaa;
-          border-radius: 8px;
-          margin-right: 50px;
-          margin-bottom: 10px;
-          line-height: 34px;
-          text-align: center;
-          cursor: default;
-          .delete {
-            position: absolute;
-            left: 37px;
-            width: 40px;
-            background-color: transparent;
-            border: none;
-            color: #aaa;
-            line-height: 34px;
-            font-size: 20px;
-            cursor: pointer;
-            &:hover {
-              color: #777;
-            }
-          }
-        }
-        .active {
-          border: 3px solid #555;
-          box-shadow: 0 0 0 1px #555;
-        }
-      }
-    }
-    .preset {
+  }
+  .set-colors {
+    flex: 0.5;
+    height: 100%;
+    padding: 0 30px;
+    border-right: 1px solid #ddd;
+    .color-list {
       display: flex;
-      flex: 0.5;
-      padding: 0 var(--set-item-padding);
+      flex-wrap: wrap;
       height: 100%;
-      .option {
+      padding: 1px;
+      transform: translateZ(0);
+      overflow-y: auto;
+      &::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      &::-webkit-scrollbar-thumb {
+        background-color: #ccc;
+        border-radius: 3px;
+      }
+      .color {
+        position: relative;
+        height: 40px;
         width: 40px;
-        margin-right: 10px;
-        button {
+        border-radius: 8px;
+        margin-right: 60px;
+        margin-bottom: 10px;
+        line-height: 40px;
+        text-align: center;
+        cursor: default;
+        transition: all 0.2s;
+        .delete {
+          position: absolute;
+          left: 37px;
           width: 40px;
-          height: 40px;
-          background-color: #eee;
-          border: 2px solid #cccccc;
-          border-radius: 6px;
-          font-weight: 700;
+          border: none;
+          box-shadow: none;
+          color: #aaa;
+          line-height: 40px;
           font-size: 20px;
           cursor: pointer;
-          transition: all 0.1s;
-        }
-        .add-preset {
-          background-color: #6db4d5;
-          border: 2px solid #61a4c3;
-          color: #fff;
-          margin: 10px 0 20px 0;
           &:hover {
-            background-color: #66abcb;
-          }
-        }
-        .delete-preset {
-          background-color: #d5b16d;
-          border: 2px solid #ae9058;
-          color: #f00;
-          &:hover {
-            background-color: #c8a668;
+            color: #777;
           }
         }
       }
-      .preset-list {
-        flex: 1;
-        display: flex;
-        flex-wrap: wrap;
-        height: 100%;
-        overflow: auto;
-        .preset-item {
-          width: 60px;
-          height: 60px;
-          margin: 10px;
-          border: 3px solid #ccc;
-          border-radius: 10px;
-        }
-        .active {
-          border: 3px solid #666;
-          box-shadow: 0 0 0 1px #666;
+      .active {
+        box-shadow: var(--roulette-shadow);
+        font-size: 18px;
+      }
+    }
+  }
+  .preset {
+    display: flex;
+    flex: 0.5;
+    padding: 0 10px 0 30px;
+    height: 100%;
+    .option {
+      width: 40px;
+      margin-right: 10px;
+      button {
+        width: 40px;
+        height: 40px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 20px;
+        cursor: pointer;
+        transition: all 0.2s;
+        &:hover {
+          color: var(--color-text-tertiary);
+          font-size: 24px;
         }
       }
-      .random {
+      .add-preset {
+        color: var(--color-text-success);
+        margin: 10px 0 20px 0;
+        &:hover {
+          background-color: var(--color-success);
+        }
+      }
+      .delete-preset {
+        color: var(--color-text-danger);
+        &:hover {
+          background-color: var(--color-danger);
+        }
+      }
+    }
+    .preset-list {
+      flex: 1;
+      display: flex;
+      flex-wrap: wrap;
+      margin-right: 20px;
+      height: 100%;
+      overflow: auto;
+      transform: translateZ(0);
+      &::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      &::-webkit-scrollbar-thumb {
+        background-color: #ccc;
+        border-radius: 3px;
+      }
+      .preset-item {
+        width: 60px;
+        height: 60px;
+        margin: 10px;
+        border-radius: 10px;
+        transition: all 0.2s;
+        box-shadow: inset 0 0 50px #fffc;
+        &:hover {
+          transform: translateY(-3px);
+          box-shadow: none;
+        }
+      }
+      .active {
+        box-shadow: 4px 7px 8px #1a1a1966;
+        &:hover {
+          box-shadow: 4px 7px 8px #1a1a1966;
+        }
+      }
+    }
+    .random {
+      width: 60px;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      button {
         width: 60px;
         height: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        button {
-          width: 60px;
-          height: 100%;
-          background-color: #eee;
-          border: 3px solid #ccc;
-          border-radius: 10px;
-          font-size: 30px;
-          font-weight: 700;
-          cursor: pointer;
+        border-radius: 10px;
+        font-size: 30px;
+        font-weight: 700;
+        cursor: pointer;
+        &:hover {
+          color: var(--color-accent);
         }
       }
     }
