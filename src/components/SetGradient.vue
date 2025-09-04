@@ -241,7 +241,7 @@ export default {
     </div>
     <div class="set-colors" ref="set-colors">
       <ul class="color-list" ref="color-list">
-        <TransitionGroup>
+        <TransitionGroup :css="false">
           <li
           class="color"
           v-for="color of this.gradientColors"
