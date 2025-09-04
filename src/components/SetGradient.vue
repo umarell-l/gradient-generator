@@ -200,17 +200,17 @@ export default {
       const presetDomList = this.$refs['preset-list']
       const listTop = presetDomList.scrollTop
       const itemTop = presetDomList.children[this.presetIndex].offsetTop
-      console.log(itemTop)
       if (itemTop < listTop + 10) {
         presetDomList.scrollTop = itemTop - 10
       } else if (itemTop - 80 > listTop) {
         presetDomList.scrollTop = itemTop - 50
       }
     },
-    activeID() {
+    async activeID() {
       const index = this.gradientColors.findIndex(color => {
         return color.id === this.activeID
       })
+      await nextTick()
       const colorList = this.$refs['color-list']
       const listTop = colorList.scrollTop
       const itemTop = colorList.children[index].offsetTop
@@ -241,7 +241,8 @@ export default {
     </div>
     <div class="set-colors" ref="set-colors">
       <ul class="color-list" ref="color-list">
-        <li
+        <TransitionGroup>
+          <li
           class="color"
           v-for="color of this.gradientColors"
           :key="color.id"
@@ -251,6 +252,7 @@ export default {
           {{ parseInt(color.stop) }}
           <button class="delete" @click="$emit('deleteColor', color.id)">×</button>
         </li>
+        </TransitionGroup>
       </ul>
     </div>
     <div class="preset">
